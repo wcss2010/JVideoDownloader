@@ -125,7 +125,9 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         try {
-            DownloaderManager.manager.createDownloader("test", urlList,"utf8", DownloaderManager.httpUrlList, "", 0, 0, this);
+            IDownloaderPlugin plugin = DownloaderManager.manager.createDownloader("test", urlList,"utf8", DownloaderManager.httpUrlList, "", 0, 0, this);
+            //plugin.SetEnabledQueryTotalSize(false);
+            plugin.dataReadTimeout = 1000;
             this.lblTotalSize.setText("" +DownloaderManager.manager.downloaders.get("test").getTotalSize());
             DownloaderManager.manager.startDownloader("test");       
             
@@ -207,7 +209,7 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
     {
         if (stateCode == DownloadStatus.downloadError)
         {
-           System.out.println(msg);
+           System.out.println("出错了：" + msg);
         }else if (stateCode == DownloadStatus.finishDownload)
         {
            System.out.println("下载完成");

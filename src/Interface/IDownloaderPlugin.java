@@ -11,8 +11,7 @@ import java.util.ArrayList;
  * @author wcss
  */
 public abstract class IDownloaderPlugin 
-{
-    
+{    
     /**
      * 下载器ID
      */
@@ -57,6 +56,32 @@ public abstract class IDownloaderPlugin
      * 缓存目录
      */
     protected String bufferDir;
+    
+    /**
+     * 连接超时
+     */
+    public int dataConnectionTimeout = 30000;
+    
+    /**
+     * 读取超时
+     */
+    public int dataReadTimeout = 20000;
+    
+    /**
+     * 写入超时
+     */
+    public int dataWriteTimeout = 20000;
+    
+    /**
+     * 是否允许查询总大小
+     * @return 
+     */
+    public abstract Boolean isEnabledQueryTotalSize();
+    
+    /**
+     * 设置是否允许查询总大小
+     */
+    public abstract void SetEnabledQueryTotalSize(Boolean result);
     
     /**
      * 设置缓存目录

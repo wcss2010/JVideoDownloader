@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * HTTP列表下载模块
@@ -30,6 +28,7 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
     private Thread thObj = null;
     private long currentSize = 0;
     private long totalSize = 0;
+    private Boolean isQueryTotalSize = true;
 
     @Override
     public void setMaxDownloadSpeed(int speed) {
@@ -44,7 +43,7 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
         try {
             JAppToolKit.JRunHelper.runSysCmd("rm -rf " + subBufDir);
         } catch (Exception ex) {
-            Logger.getLogger(HttpDownloader.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(HttpDownloader.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
@@ -148,23 +147,29 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
      * 初始化影片大小
      */
     private void initVideoSize() throws Exception {
-        if (this.totalSize <= 0) {
-            if (this.urlList.get(this.currentUrlIndex).trim().toLowerCase().startsWith("http")) {
-                HttpURLConnection httpUrl = null;
-                URL url = null;
-                for (int k = 0; k < this.urlList.size(); k++) {
-                    this.currentUrlIndex = k;
-                    //建立链接
-                    url = new URL(this.urlList.get(this.currentUrlIndex).trim());
-                    httpUrl = (HttpURLConnection) url.openConnection();
-                    //连接指定的资源
-                    httpUrl.connect();
-                    this.totalSize += httpUrl.getContentLength();
-                    httpUrl.disconnect();
+        if (isEnabledQueryTotalSize()) {
+            if (this.totalSize <= 0) {
+                if (this.urlList.get(this.currentUrlIndex).trim().toLowerCase().startsWith("http")) {
+                    HttpURLConnection httpUrl = null;
+                    URL url = null;
+                    for (int k = 0; k < this.urlList.size(); k++) {
+                        this.currentUrlIndex = k;
+                        //建立链接
+                        url = new URL(this.urlList.get(this.currentUrlIndex).trim());
+                        httpUrl = (HttpURLConnection) url.openConnection();
+                        httpUrl.setConnectTimeout(this.dataConnectionTimeout);
+                        httpUrl.setReadTimeout(this.dataReadTimeout);
+                        //连接指定的资源
+                        httpUrl.connect();
+                        this.totalSize += httpUrl.getContentLength();
+                        httpUrl.disconnect();
+                    }
+                } else {
+                    this.totalSize = 0;
                 }
-            } else {
-                this.totalSize = 0;
             }
+        } else {
+            this.totalSize = 0;
         }
     }
 
@@ -174,7 +179,7 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
             initVideoSize();
         } catch (Exception ex) {
             ex.printStackTrace();
-            Logger.getLogger(HttpDownloader.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(HttpDownloader.class.getName()).log(Level.SEVERE, null, ex);
         }
         return this.totalSize;
     }
@@ -229,6 +234,11 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
 //建立链接
         url = new URL(destUrl);
         httpUrl = (HttpURLConnection) url.openConnection();
+
+        //设置超时
+        httpUrl.setConnectTimeout(this.dataConnectionTimeout);
+        httpUrl.setReadTimeout(this.dataReadTimeout);
+
 //连接指定的资源
         httpUrl.connect();
 //获取网络输入流
@@ -268,5 +278,15 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
         } catch (Exception ex) {
             this.onReportError(ex.toString());
         }
+    }
+
+    @Override
+    public Boolean isEnabledQueryTotalSize() {
+        return isQueryTotalSize;
+    }
+
+    @Override
+    public void SetEnabledQueryTotalSize(Boolean result) {
+        isQueryTotalSize = result;
     }
 }

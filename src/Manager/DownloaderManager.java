@@ -5,7 +5,7 @@
 package Manager;
 
 import Downloader.HTTPURLListDownloader;
-import Downloader.HttpDownloader;
+//import Downloader.HttpDownloader;
 import Interface.IDownloaderPlugin;
 import Interface.IDownloaderEvent;
 import java.awt.Toolkit;
@@ -23,14 +23,14 @@ import java.util.Iterator;
  */
 public class DownloaderManager 
 {
-    public static final String httpAndFTP_OnlyOne = "http";
+    //public static final String httpAndFTP_OnlyOne = "http";
     public static final String httpUrlList = "httplist";
     /**
      * 构造函数
      */
     public DownloaderManager()
     {
-       downloaderTypes.put("http", new HttpDownloader());
+//       downloaderTypes.put("http", new HttpDownloader());
        downloaderTypes.put("httplist", new HTTPURLListDownloader());
     }
 
