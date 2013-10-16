@@ -126,7 +126,7 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
         // TODO add your handling code here:
         try {
             IDownloaderPlugin plugin = DownloaderManager.manager.createDownloader("test", urlList,"utf8", DownloaderManager.httpUrlList, "", 0, 0, this);
-            //plugin.SetEnabledQueryTotalSize(false);
+            plugin.SetEnabledQueryTotalSize(false);
             plugin.dataReadTimeout = 1000;
             this.lblTotalSize.setText("" +DownloaderManager.manager.downloaders.get("test").getTotalSize());
             DownloaderManager.manager.startDownloader("test");       
@@ -216,6 +216,9 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
             for (int i = 0; i < sender.urlList.size(); i++) {
                 System.out.println(sender.getBufferFileUrl(i));
             }
+        }else if (stateCode == DownloadStatus.downloadAgain)
+        {
+            System.out.println("重试：" + msg);
         }
     }
 }

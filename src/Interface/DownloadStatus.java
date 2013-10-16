@@ -14,4 +14,5 @@ public class DownloadStatus
     public static final int stopDownload = 2;
     public static final int finishDownload = 3;
     public static final int downloadError = 4;
+    public static final int downloadAgain = 5;
 }

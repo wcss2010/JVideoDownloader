@@ -222,43 +222,61 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
      * @param fileName String
      * @throws Exception
      */
-    public void httpSaveToFile(String destUrl, String fileName) throws IOException {
+    public Boolean httpSaveToFile(String destUrl, String fileName) throws IOException {
         FileOutputStream fos = null;
         BufferedInputStream bis = null;
         HttpURLConnection httpUrl = null;
         URL url = null;
         byte[] buf = new byte[BUFFER_SIZE];
         int size = 0;
-
+        try {
 
 //建立链接
-        url = new URL(destUrl);
-        httpUrl = (HttpURLConnection) url.openConnection();
+            url = new URL(destUrl);
+            httpUrl = (HttpURLConnection) url.openConnection();
 
-        //设置超时
-        httpUrl.setConnectTimeout(this.dataConnectionTimeout);
-        httpUrl.setReadTimeout(this.dataReadTimeout);
+            //设置超时
+            httpUrl.setConnectTimeout(this.dataConnectionTimeout);
+            httpUrl.setReadTimeout(this.dataReadTimeout);
 
 //连接指定的资源
-        httpUrl.connect();
+            httpUrl.connect();
 //获取网络输入流
-        bis = new BufferedInputStream(httpUrl.getInputStream());
+            bis = new BufferedInputStream(httpUrl.getInputStream());
 //建立文件
-        fos = new FileOutputStream(fileName);
+            fos = new FileOutputStream(fileName);
 
 //        if (this.DEBUG)
 //            System.out.println("正在获取链接[" + destUrl + "]的内容.../n将其保存为文件[" +
 //                               fileName + "]");
 //保存文件
-        while ((size = bis.read(buf)) != -1) {
-            currentSize += size;
-            fos.write(buf, 0, size);
-            this.onReportProgress(this.currentUrlIndex, currentSize);
-        }
+            while ((size = bis.read(buf)) != -1) {
+                currentSize += size;
+                fos.write(buf, 0, size);
+                this.onReportProgress(this.currentUrlIndex, currentSize);
+            }
 
-        fos.close();
-        bis.close();
-        httpUrl.disconnect();
+            return true;
+        } catch (Exception ex) {
+            this.onReportError(ex.toString());
+            return false;
+        } finally {
+            try {
+                fos.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            try {
+                bis.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            try {
+                httpUrl.disconnect();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -269,13 +287,38 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
             for (int k = 0; k < this.urlList.size(); k++) {
                 this.currentUrlIndex = k;
                 if (this.isRunning()) {
-                    this.httpSaveToFile(this.urlList.get(this.currentUrlIndex), this.bufferUrlList.get(this.currentUrlIndex));
+                    Boolean result = this.httpSaveToFile(this.urlList.get(this.currentUrlIndex), this.bufferUrlList.get(this.currentUrlIndex));
+                    for (int f = 0; f < 15; f++) {
+                        if (result) {
+                            break;
+                        } else {
+                            this.onReportStatus(DownloadStatus.downloadAgain, "重新下载序号" + this.currentUrlIndex + "的文件!");
+                            if (new File(this.bufferUrlList.get(this.currentUrlIndex)).exists()) {
+                                try {
+                                    JAppToolKit.JRunHelper.runSysCmd("rm -rf " + this.bufferUrlList.get(this.currentUrlIndex));
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+
+                            Boolean resultAgain = this.httpSaveToFile(this.urlList.get(this.currentUrlIndex), this.bufferUrlList.get(this.currentUrlIndex));
+                            if (resultAgain) {
+                                result = resultAgain;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!result) {
+                        throw new Exception("下载失败!");
+                    }
                 }
             }
 
             this.onReportFinish();
             this.isRun = false;
         } catch (Exception ex) {
+            this.isRun = false;
             this.onReportError(ex.toString());
         }
     }
