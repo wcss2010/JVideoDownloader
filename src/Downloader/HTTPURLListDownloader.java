@@ -205,7 +205,7 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
     }
 
     @Override
-    public String getFileName(int fileIndex) {
+    public String getSourceFileName(int fileIndex) {
         String[] aaa = this.urlList.get(fileIndex).split("/");
         return aaa[aaa.length - 1].split("\\.")[0];
     }
@@ -288,18 +288,12 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
                 this.currentUrlIndex = k;
                 if (this.isRunning()) {
                     Boolean result = this.httpSaveToFile(this.urlList.get(this.currentUrlIndex), this.bufferUrlList.get(this.currentUrlIndex));
-                    for (int f = 0; f < 15; f++) {
+                    for (int f = 0; f < this.maxTryCount; f++) {
                         if (result) {
                             break;
                         } else {
                             this.onReportStatus(DownloadStatus.downloadAgain, "重新下载序号" + this.currentUrlIndex + "的文件!");
-                            if (new File(this.bufferUrlList.get(this.currentUrlIndex)).exists()) {
-                                try {
-                                    JAppToolKit.JRunHelper.runSysCmd("rm -rf " + this.bufferUrlList.get(this.currentUrlIndex));
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
+                            deleteBufferFile(this.currentUrlIndex);
 
                             Boolean resultAgain = this.httpSaveToFile(this.urlList.get(this.currentUrlIndex), this.bufferUrlList.get(this.currentUrlIndex));
                             if (resultAgain) {
@@ -331,5 +325,24 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
     @Override
     public void SetEnabledQueryTotalSize(Boolean result) {
         isQueryTotalSize = result;
+    }
+
+    @Override
+    public Boolean deleteBufferFile(int fileIndex) {
+        if (this.bufferUrlList.size() > fileIndex) {
+            if (new File(this.bufferUrlList.get(fileIndex)).exists()) {
+                try {
+                    JAppToolKit.JRunHelper.runSysCmd("rm -rf " + this.bufferUrlList.get(fileIndex));
+                    return true;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

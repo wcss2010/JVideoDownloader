@@ -127,7 +127,7 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
         try {
             IDownloaderPlugin plugin = DownloaderManager.manager.createDownloader("test", urlList,"utf8", DownloaderManager.httpUrlList, "", 0, 0, this);
             plugin.SetEnabledQueryTotalSize(false);
-            plugin.dataReadTimeout = 1000;
+            //plugin.dataReadTimeout = 1000;
             this.lblTotalSize.setText("" +DownloaderManager.manager.downloaders.get("test").getTotalSize());
             DownloaderManager.manager.startDownloader("test");       
             
@@ -141,7 +141,7 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
         try {
             // TODO add your handling code here:
             //DownloaderManager.manager.clearAllDownloader();
-            DownloaderManager.manager.clearDownloader("test");
+            DownloaderManager.manager.clearDownloaderBufferDir("test");
             DownloaderManager.manager.downloaders.remove("text");
         } catch (Exception ex) {
             Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -204,6 +204,7 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
         System.out.println("序号：" + fileIndex + ",当前位置：" + currentLength + ",最大大小：" + totalLength);
     }
 
+    int trycount = 0;
     @Override
     public void onReportStatus(IDownloaderPlugin sender, int stateCode, String msg)
     {
@@ -218,7 +219,8 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
             }
         }else if (stateCode == DownloadStatus.downloadAgain)
         {
-            System.out.println("重试：" + msg);
+            trycount++;
+            System.out.println("重试：" + msg + ",次数：" + trycount);
         }
     }
 }

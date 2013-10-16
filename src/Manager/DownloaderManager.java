@@ -127,7 +127,7 @@ public class DownloaderManager
     /**
      * 清空下载缓存
      */
-    public void clearAllDownloader()
+    public void clearAllDownloaderBufferDir()
     {
         for (Iterator it = downloaders.keySet().iterator(); it.hasNext();) {
             //从ht中取  
@@ -143,7 +143,7 @@ public class DownloaderManager
      * @param name
      * @throws Exception 
      */
-    public void clearDownloader(String name) throws Exception
+    public void clearDownloaderBufferDir(String name) throws Exception
     {
         if (downloaders.containsKey(name))
         {
