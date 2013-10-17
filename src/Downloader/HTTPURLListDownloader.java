@@ -146,19 +146,15 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
     /**
      * 初始化影片大小
      */
-    private void initVideoSize() throws Exception {
+    protected void initVideoSize() throws Exception {
         if (isEnabledQueryTotalSize()) {
             if (this.totalSize <= 0) {
                 if (this.urlList.get(this.currentUrlIndex).trim().toLowerCase().startsWith("http")) {
                     HttpURLConnection httpUrl = null;
-                    URL url = null;
                     for (int k = 0; k < this.urlList.size(); k++) {
                         this.currentUrlIndex = k;
                         //建立链接
-                        url = new URL(this.urlList.get(this.currentUrlIndex).trim());
-                        httpUrl = (HttpURLConnection) url.openConnection();
-                        httpUrl.setConnectTimeout(this.dataConnectionTimeout);
-                        httpUrl.setReadTimeout(this.dataReadTimeout);
+                        httpUrl = createHttpConnection(this.urlList.get(this.currentUrlIndex).trim());
                         //连接指定的资源
                         httpUrl.connect();
                         this.totalSize += httpUrl.getContentLength();
@@ -216,6 +212,46 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
     }
 
     /**
+     * 创建HTTP连接对象
+     * @param destUrl
+     * @return 
+     */
+    protected HttpURLConnection createHttpConnection(String destUrl) 
+    {
+        HttpURLConnection httpUrl = null;
+        URL url = null;
+        
+        try
+        {
+            Thread.sleep(100);
+            System.out.println("准备创建HTTP连接......");
+        }catch(Exception ex)
+        {
+           ex.printStackTrace();
+        }
+        
+        try 
+        {
+            System.out.println("正在创建连接对象!地址:" + destUrl);
+
+            //建立链接
+            url = new URL(destUrl);
+            httpUrl = (HttpURLConnection) url.openConnection();
+
+            //设置超时
+            httpUrl.setConnectTimeout(this.dataConnectionTimeout);
+            httpUrl.setReadTimeout(this.dataReadTimeout);
+            
+            httpUrl.setRequestProperty("user-agent","mozilla/4.0 (compatible; msie 6.0; windows 2000)"); 
+
+            return httpUrl;
+
+        } catch (Exception ex) {
+            return httpUrl;
+        }
+    }
+
+    /**
      * 将HTTP资源另存为文件
      *
      * @param destUrl String
@@ -231,14 +267,8 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
         int size = 0;
         try {
 
-//建立链接
-            url = new URL(destUrl);
-            httpUrl = (HttpURLConnection) url.openConnection();
-
-            //设置超时
-            httpUrl.setConnectTimeout(this.dataConnectionTimeout);
-            httpUrl.setReadTimeout(this.dataReadTimeout);
-
+            //创建HTTP连接对象
+            httpUrl = createHttpConnection(destUrl);
 //连接指定的资源
             httpUrl.connect();
 //获取网络输入流
@@ -299,6 +329,16 @@ public class HTTPURLListDownloader extends IDownloaderPlugin implements Runnable
                             if (resultAgain) {
                                 result = resultAgain;
                                 break;
+                            }else
+                            {
+                                try
+                                {
+                                    Thread.sleep(5000);
+                                    System.out.println("本次重试失败！5000毫秒后重试！");
+                                }catch(Exception ex)
+                                {
+                                    ex.printStackTrace();
+                                }
                             }
                         }
                     }

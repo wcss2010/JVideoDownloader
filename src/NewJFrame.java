@@ -25,7 +25,10 @@ public class NewJFrame extends javax.swing.JFrame implements IDownloaderEvent {
     public NewJFrame()
     {
         initComponents();
-        urlList = new String[]{ "http://www.cnunixclub.org/publicDir/installer/japkinstaller36.deb","http://www.cnunixclub.org/publicDir/installer/japkinstaller36-all.sh.tar.gz" };
+        urlList = new String[2000];
+        for (int k = 0; k < 2000; k++) {
+            urlList[k] = "http://zhidao.baidu.com/";
+        }
     }
 
     /**
